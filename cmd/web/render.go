@@ -1,6 +1,7 @@
 package main
 
 import (
+	"final-project/data"
 	"fmt"
 	"net/http"
 	"text/template"
@@ -13,13 +14,13 @@ type TemplateData struct {
 	StringMap     map[string]string
 	IntMap        map[string]int
 	FloatMap      map[string]float64
-	DataMap       map[string]any
+	Data          map[string]any
 	Flash         string
 	Warning       string
 	Error         string
 	Authenticated bool
 	Now           time.Time
-	// User *data.User
+	User          *data.User
 }
 
 func (app *Config) render(
@@ -71,7 +72,12 @@ func (app *Config) addDefaultData(
 
 	if app.isAuthenticated(r) {
 		td.Authenticated = true
-		// TODO - get more user information
+		user, ok := app.Session.Get(r.Context(), "user").(data.User)
+		if !ok {
+			app.ErrorLog.Println("can't get user from session")
+		} else {
+			td.User = &user
+		}
 	}
 	td.Now = time.Now()
 
